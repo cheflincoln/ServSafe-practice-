@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ServSafe Food Manager Practice Exam — Interactive Study Guide</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy: '#0f172a',
+        slate: { 850: '#1a2332' },
+        exam: {
+          red: '#ef4444',
+          green: '#22c55e',
+          blue: '#3b82f6',
+          amber: '#f59e0b',
+          purple: '#a855f7',
+          teal: '#14b8a6',
+        }
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      }
+    }
+  }
+}
+</script>
+<style>
+/* SKELETON — sections filled via Edit */
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; }
+
+/* Reveal animation base */
+.reveal { opacity: 0; transform: translateY(30px); }
+
+/* Question card */
+.q-card { background: rgba(30,41,59,.7); border: 1px solid rgba(148,163,184,.12); border-radius: 1rem; backdrop-filter: blur(12px); transition: all .3s ease; }
+.q-card:hover { border-color: rgba(59,130,246,.35); box-shadow: 0 0 30px rgba(59,130,246,.08); }
+
+/* Option buttons */
+.opt-btn { background: rgba(51,65,85,.5); border: 1px solid rgba(148,163,184,.15); border-radius: .625rem; padding: .75rem 1rem; cursor: pointer; transition: all .25s ease; display: flex; align-items: center; gap: .75rem; text-align: left; width: 100%; }
+.opt-btn:hover { background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.3); }
+.opt-btn.selected { background: rgba(59,130,246,.18); border-color: rgba(59,130,246,.5); }
+.opt-btn.correct { background: rgba(34,197,94,.15); border-color: rgba(34,197,94,.5); }
+.opt-btn.correct .opt-letter { background: #22c55e; color: #fff; }
+.opt-btn.wrong { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.5); }
+.opt-btn.wrong .opt-letter { background: #ef4444; color: #fff; }
+
+.opt-letter { width: 2rem; height: 2rem; border-radius: .5rem; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: .85rem; background: rgba(100,116,139,.3); flex-shrink: 0; transition: all .25s ease; }
+
+/* Category pill */
+.cat-pill { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: .25rem .65rem; border-radius: 9999px; }
+
+/* Progress bar */
+.progress-ring { transition: stroke-dashoffset .6s ease; }
+
+/* Stat card glow */
+.stat-glow { position: relative; }
+.stat-glow::before { content: ''; position: absolute; inset: -1px; border-radius: 1rem; background: linear-gradient(135deg, rgba(59,130,246,.3), rgba(168,85,247,.3)); z-index: -1; opacity: 0; transition: opacity .3s; }
+.stat-glow:hover::before { opacity: 1; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+/* Video wrapper */
+.video-wrap { aspect-ratio: 16/9; background: #0c1220; border-radius: .75rem; overflow: hidden; }
+.video-wrap iframe, .video-wrap video { width: 100%; height: 100%; border: none; }
+
+/* Floating nav */
+.float-nav { backdrop-filter: blur(16px); background: rgba(15,23,42,.85); border: 1px solid rgba(148,163,184,.1); }
+
+/* Badge modal overlay */
+.badge-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.75); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity .4s ease; }
+.badge-overlay.active { opacity: 1; pointer-events: all; }
+.badge-modal { background: #1e293b; border: 1px solid rgba(148,163,184,.15); border-radius: 1.25rem; max-width: 52rem; width: 100%; max-height: 92vh; overflow-y: auto; padding: 2rem; transform: translateY(20px) scale(.97); transition: transform .4s ease; }
+.badge-overlay.active .badge-modal { transform: translateY(0) scale(1); }
+.badge-input { background: rgba(51,65,85,.5); border: 1px solid rgba(148,163,184,.2); border-radius: .625rem; padding: .75rem 1rem; color: #e2e8f0; font-size: 1rem; width: 100%; outline: none; transition: border-color .25s; }
+.badge-input:focus { border-color: rgba(59,130,246,.5); }
+.badge-input::placeholder { color: #64748b; }
+
+/* Confetti canvas */
+#confettiCanvas { position: fixed; inset: 0; z-index: 101; pointer-events: none; }
+
+/* Previous badge banner */
+.prev-badge-banner { background: linear-gradient(135deg, rgba(59,130,246,.1), rgba(168,85,247,.1)); border: 1px solid rgba(59,130,246,.2); border-radius: .75rem; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- FLOATING NAV -->
+<nav id="floatNav" class="float-nav fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-full px-6 py-3 hidden items-center gap-6 text-sm font-medium text-slate-400">
+  <a href="#hero" class="hover:text-white transition">Home</a>
+  <a href="#overview" class="hover:text-white transition">Overview</a>
+  <a href="#questions" class="hover:text-white transition">Questions</a>
+  <a href="#analytics" class="hover:text-white transition">Analytics</a>
+  <a href="#videos" class="hover:text-white transition">Resources</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-blue-950/50 via-navy to-purple-950/30"></div>
+  <div class="absolute inset-0" style="background: radial-gradient(circle at 30% 40%, rgba(59,130,246,.08) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(168,85,247,.06) 0%, transparent 50%);"></div>
+  <!-- Grid pattern -->
+  <div class="absolute inset-0 opacity-[0.03]" style="background-image: linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px); background-size: 60px 60px;"></div>
+
+  <div class="relative z-10 text-center max-w-4xl mx-auto px-6">
+    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-8">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      63 Practice Questions with Instant Feedback
+    </div>
+    <h1 class="text-5xl md:text-7xl font-black tracking-tight text-white mb-6 leading-[1.1]">
+      ServSafe Food Manager<br>
+      <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-teal-400 bg-clip-text text-transparent">Practice Exam</span>
+    </h1>
+    <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+      An interactive study guide covering food safety, temperature control, HACCP, personal hygiene, and regulatory compliance. Test your knowledge before the real exam.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="#questions" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/25">
+        Start Practice
+      </a>
+      <a href="#analytics" class="px-8 py-3.5 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 transition">
+        View Analytics
+      </a>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+    <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+  </div>
+</section>
+
+<!-- OVERVIEW STATS -->
+<section id="overview" class="py-24 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <p class="text-blue-400 font-semibold text-sm uppercase tracking-wider mb-3">Exam Overview</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-white">What You Need to Know</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12">
+      <!-- stat cards -->
+      <div class="stat-glow q-card p-6 text-center reveal">
+        <div class="text-4xl font-black text-white mb-1">63</div>
+        <div class="text-slate-400 text-sm">Total Questions</div>
+      </div>
+      <div class="stat-glow q-card p-6 text-center reveal">
+        <div class="text-4xl font-black text-exam-green mb-1">75%</div>
+        <div class="text-slate-400 text-sm">Passing Score</div>
+      </div>
+      <div class="stat-glow q-card p-6 text-center reveal">
+        <div class="text-4xl font-black text-exam-amber mb-1">7</div>
+        <div class="text-slate-400 text-sm">Topic Areas</div>
+      </div>
+      <div class="stat-glow q-card p-6 text-center reveal">
+        <div class="text-4xl font-black text-exam-purple mb-1">2hr</div>
+        <div class="text-slate-400 text-sm">Time Limit</div>
+      </div>
+    </div>
+    <!-- Topic distribution chart -->
+    <div class="q-card p-6 md:p-8 reveal">
+      <h3 class="text-lg font-semibold text-white mb-4">Question Distribution by Topic</h3>
+      <div id="topicChart" style="width:100%;height:350px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUESTIONS SECTION -->
+<section id="questions" class="py-24 px-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-6 reveal">
+      <p class="text-blue-400 font-semibold text-sm uppercase tracking-wider mb-3">Interactive Practice</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Test Your Knowledge</h2>
+      <p class="text-slate-400 max-w-xl mx-auto">Select an answer for each question. You'll get instant feedback showing whether you're correct.</p>
+    </div>
+
+    <!-- Previous badge banner (shown if badge in localStorage) -->
+    <div id="prevBadgeBanner" class="prev-badge-banner hidden reveal" style="opacity:1;transform:none;">
+      <div class="flex items-center gap-3">
+        <span id="prevBadgeIcon" class="text-2xl"></span>
+        <div>
+          <div class="text-white text-sm font-semibold" id="prevBadgeText"></div>
+          <div class="text-slate-400 text-xs" id="prevBadgeDate"></div>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="viewSavedBadge()" class="px-4 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-medium rounded-lg border border-blue-500/20 transition">View Badge</button>
+        <button onclick="resetAll();hidePrevBanner();" class="px-4 py-1.5 bg-white/5 hover:bg-white/10 text-slate-400 text-xs font-medium rounded-lg border border-white/10 transition">New Attempt</button>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="flex flex-wrap justify-center gap-2 mb-10 reveal" id="filterBar">
+      <button onclick="filterQuestions('all')" class="cat-pill bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition" data-cat="all">All (63)</button>
+      <button onclick="filterQuestions('safety')" class="cat-pill bg-red-500/15 text-red-400 border border-red-500/20 hover:bg-red-500/30 transition" data-cat="safety">Food Safety</button>
+      <button onclick="filterQuestions('temp')" class="cat-pill bg-amber-500/15 text-amber-400 border border-amber-500/20 hover:bg-amber-500/30 transition" data-cat="temp">Temperature</button>
+      <button onclick="filterQuestions('hygiene')" class="cat-pill bg-green-500/15 text-green-400 border border-green-500/20 hover:bg-green-500/30 transition" data-cat="hygiene">Hygiene</button>
+      <button onclick="filterQuestions('haccp')" class="cat-pill bg-purple-500/15 text-purple-400 border border-purple-500/20 hover:bg-purple-500/30 transition" data-cat="haccp">HACCP & Regs</button>
+      <button onclick="filterQuestions('equipment')" class="cat-pill bg-teal-500/15 text-teal-400 border border-teal-500/20 hover:bg-teal-500/30 transition" data-cat="equipment">Equipment</button>
+      <button onclick="filterQuestions('allergen')" class="cat-pill bg-pink-500/15 text-pink-400 border border-pink-500/20 hover:bg-pink-500/30 transition" data-cat="allergen">Allergens</button>
+    </div>
+
+    <!-- Score tracker -->
+    <div class="q-card p-4 mb-8 flex items-center justify-between reveal" id="scoreTracker">
+      <div class="flex items-center gap-4">
+        <div class="text-sm text-slate-400">Progress</div>
+        <div class="w-48 h-2 bg-slate-700 rounded-full overflow-hidden">
+          <div id="progressBar" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="flex items-center gap-6 text-sm">
+        <span class="text-exam-green"><span id="correctCount">0</span> Correct</span>
+        <span class="text-exam-red"><span id="wrongCount">0</span> Wrong</span>
+        <span class="text-slate-400"><span id="answeredCount">0</span>/63</span>
+      </div>
+    </div>
+
+    <!-- Questions container -->
+    <div id="questionsContainer" class="space-y-6">
+      <!-- Filled by JS -->
+    </div>
+
+    <div class="text-center mt-12 reveal">
+      <button onclick="resetAll()" class="px-6 py-3 bg-slate-700/50 hover:bg-slate-700 text-slate-300 font-medium rounded-xl border border-slate-600/30 transition">
+        Reset All Answers
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYTICS -->
+<section id="analytics" class="py-24 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <p class="text-blue-400 font-semibold text-sm uppercase tracking-wider mb-3">Performance Analytics</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-white">Track Your Progress</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="q-card p-6 md:p-8 reveal">
+        <h3 class="text-lg font-semibold text-white mb-4">Score by Category</h3>
+        <div id="radarChart" style="width:100%;height:350px;"></div>
+      </div>
+      <div class="q-card p-6 md:p-8 reveal">
+        <h3 class="text-lg font-semibold text-white mb-4">Answer Distribution</h3>
+        <div id="pieChart" style="width:100%;height:350px;"></div>
+      </div>
+      <div class="q-card p-6 md:p-8 md:col-span-2 reveal">
+        <h3 class="text-lg font-semibold text-white mb-4">Temperature Requirements Reference</h3>
+        <div id="tempChart" style="width:100%;height:320px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO RESOURCES -->
+<section id="videos" class="py-24 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <p class="text-blue-400 font-semibold text-sm uppercase tracking-wider mb-3">Study Resources</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-white">Video Guides</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="q-card overflow-hidden reveal" style="opacity:1;transform:none;">
+        <div class="video-wrap" style="opacity:1;">
+          <iframe src="https://www.youtube.com/embed/mlFCDMkhqOw" title="ServSafe Food Handler Training" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="opacity:1;"></iframe>
+        </div>
+        <div class="p-5">
+          <h4 class="font-semibold text-white mb-1">Food Handler Training Overview</h4>
+          <p class="text-slate-400 text-sm">Comprehensive review of food safety principles and best practices.</p>
+        </div>
+      </div>
+      <div class="q-card overflow-hidden reveal" style="opacity:1;transform:none;">
+        <div class="video-wrap" style="opacity:1;">
+          <iframe src="https://www.youtube.com/embed/9il0DVhMTmQ" title="Temperature Danger Zone" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="opacity:1;"></iframe>
+        </div>
+        <div class="p-5">
+          <h4 class="font-semibold text-white mb-1">Temperature Danger Zone Explained</h4>
+          <p class="text-slate-400 text-sm">Understanding critical temperature thresholds for food safety.</p>
+        </div>
+      </div>
+      <div class="q-card overflow-hidden reveal" style="opacity:1;transform:none;">
+        <div class="video-wrap" style="opacity:1;">
+          <iframe src="https://www.youtube.com/embed/kP5pMdLDzHE" title="HACCP Principles" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="opacity:1;"></iframe>
+        </div>
+        <div class="p-5">
+          <h4 class="font-semibold text-white mb-1">HACCP 7 Principles</h4>
+          <p class="text-slate-400 text-sm">A clear walkthrough of HACCP food safety management systems.</p>
+        </div>
+      </div>
+      <div class="q-card overflow-hidden reveal" style="opacity:1;transform:none;">
+        <div class="video-wrap" style="opacity:1;">
+          <iframe src="https://www.youtube.com/embed/4ixYJAobfBU" title="Cross Contamination Prevention" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="opacity:1;"></iframe>
+        </div>
+        <div class="p-5">
+          <h4 class="font-semibold text-white mb-1">Cross-Contamination Prevention</h4>
+          <p class="text-slate-400 text-sm">Practical strategies to prevent cross-contamination in kitchens.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BADGE MODAL OVERLAY -->
+<div class="badge-overlay" id="badgeOverlay">
+  <div class="badge-modal">
+    <!-- Step 1: Completion summary / name input -->
+    <div id="badgeStep1">
+      <div class="text-center mb-6">
+        <div id="badgeEmoji" class="text-5xl mb-3"></div>
+        <h3 id="badgeTitle" class="text-2xl font-bold text-white mb-2"></h3>
+        <p id="badgeSubtitle" class="text-slate-400"></p>
+      </div>
+      <!-- Tier indicator -->
+      <div id="badgeTierDisplay" class="text-center mb-6"></div>
+      <!-- Name input (only for passing) -->
+      <div id="badgeNameSection" class="mb-6 hidden">
+        <label class="block text-sm font-medium text-slate-300 mb-2">Enter your full name (as it should appear on badge)</label>
+        <input type="text" id="badgeNameInput" class="badge-input" placeholder="e.g. Maria Garcia" maxlength="60" autocomplete="name">
+      </div>
+      <!-- Action buttons -->
+      <div class="flex flex-wrap justify-center gap-3">
+        <button id="badgeGenerateBtn" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition hidden" onclick="generateBadge()">Generate My Badge</button>
+        <button id="badgeRetryBtn" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition hidden" onclick="closeBadgeModal();resetAll();">Try Again</button>
+        <button id="badgeReviewBtn" class="px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl border border-white/10 transition" onclick="closeBadgeModal()">Review Answers</button>
+      </div>
+    </div>
+    <!-- Step 2: Generated badge display -->
+    <div id="badgeStep2" class="hidden">
+      <div class="text-center mb-4">
+        <h3 class="text-xl font-bold text-white mb-1">Your Badge is Ready</h3>
+        <p class="text-slate-400 text-sm">Download or screenshot to save your achievement.</p>
+      </div>
+      <div class="flex justify-center mb-6">
+        <canvas id="badgeCanvas" width="800" height="600" class="rounded-lg shadow-2xl" style="max-width:100%;height:auto;"></canvas>
+      </div>
+      <!-- Hidden div for QR code generation -->
+      <div id="qrHolder" style="position:absolute;left:-9999px;top:-9999px;"></div>
+      <div class="flex flex-wrap justify-center gap-3">
+        <button onclick="downloadBadge()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Download Badge
+        </button>
+        <button onclick="closeBadgeModal();resetAll();" class="px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl border border-white/10 transition">Start New Practice</button>
+      </div>
+    </div>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<!-- FOOTER -->
+<footer class="border-t border-slate-800 py-12 px-6">
+  <div class="max-w-4xl mx-auto text-center">
+    <p class="text-slate-500 text-sm mb-2">ServSafe Food Manager Practice Exam — Interactive Study Guide</p>
+    <p class="text-slate-600 text-xs">This is a practice resource for educational purposes. ServSafe is a registered trademark of the National Restaurant Association.</p>
+  </div>
+</footer>
+
+<script>
+// ==================== QUESTION DATA ====================
+// placeholder — filled via Edit
+const QUESTIONS = [
+{n:1,q:"Using food coloring to make ground beef appear fresher is",o:["Not allowed by the CDC","Not allowed by the regulatory authority","Allowed with a retail food license","Allowed if a HACCP plan is in place"],a:1,cat:"safety"},
+{n:2,q:"Freezing food keeps it safe because freezing",o:["Allows food to be stored for several years","Destroys chemical contaminants in food","Provides an easy way to transport raw food","Slows the growth of pathogens in food"],a:3,cat:"temp"},
+{n:3,q:"Later in the shift a food handler complains about a sore throat and fever. What should the manager do with the food that the food handler prepared earlier in the day?",o:["Serve it","Throw it out","Freeze it","Donate it"],a:1,cat:"hygiene"},
+{n:4,q:"Fresh fruits and vegetables must be washed",o:["After being cut","Before being cut","In sanitizing solution","If they are organic"],a:1,cat:"safety"},
+{n:5,q:"Food that has NOT been honestly presented must be",o:["Thrown out","Re-labeled","Repurposed","Frozen"],a:0,cat:"haccp"},
+{n:6,q:"What agency is responsible for inspecting meat, poultry, egg, fruits and vegetables that are shipped across state lines?",o:["FDA","USDA","CDC","NSF"],a:1,cat:"haccp"},
+{n:7,q:"Food handler may wear fingernail polish or artificial nails if they",o:["Wash hands frequently","Wear intact gloves in good repair","Clean and trim nails daily","Work with ready to eat food only"],a:1,cat:"hygiene"},
+{n:8,q:"Tabletop foodservice equipment on legs should have a space between the base of the equipment and the tabletop of at least",o:["2 in","3 in","4 in","8 in"],a:2,cat:"equipment"},
+{n:9,q:"One of the major food allergens is",o:["Latex","Tomatoes","Soybeans","Corn oil"],a:2,cat:"allergen"},
+{n:10,q:"Floor coving is used to",o:["Reduce sharp corners on hard-to-clean floors","Eliminate the risk of slips and falls","Increase the resiliency of hard surface flooring","Improve noise reduction capabilities"],a:0,cat:"equipment"},
+{n:11,q:"Tuna salad in a cooler must be held at or below an internal temperature of",o:["32\u00b0F","41\u00b0F","45\u00b0F","70\u00b0F"],a:1,cat:"temp"},
+{n:12,q:"Which is a TCS Food",o:["Packets of mayonnaise","Alfalfa sprouts","Canned tomatoes","Iced tea"],a:1,cat:"safety"},
+{n:13,q:"To which minimum internal temperature should gravy be reheated in a microwave?",o:["70\u00b0F","135\u00b0F","165\u00b0F","180\u00b0F"],a:2,cat:"temp"},
+{n:14,q:"Which is most likely to be contaminated with the virus that caused hepatitis A?",o:["Cooked long grain rice","Garlic mashed potatoes","Rare cooked hamburger","Raw oysters on the half shell"],a:3,cat:"safety"},
+{n:15,q:"Game animals received for sale in an operation should be",o:["Purchased before being field dressed","Free from parasites such as fleas and ticks","Legally hunted while in season","Commercially raised for food"],a:3,cat:"safety"},
+{n:16,q:"Ready-to-eat food should be thrown out if it has been",o:["Stored in the cooler for 3 days","In the temperature danger zone for 2 hours","Hot-held at a temperature of 135\u00b0F","Handled by sick food handlers who are later excluded"],a:3,cat:"safety"},
+{n:17,q:"The temperature of vegetable beef soup held on a steam table is checked and recorded in a log every 2 hours. When the temperature falls below 135\u00b0F, the cook tells the manager and then reheats the soup to 165\u00b0F for 15 seconds. What was the corrective action taken?",o:["Checking the soup\u2019s temperature every 2 hours","Recording the soup\u2019s temperature in a log","Telling the manager that the soup\u2019s temperature had fallen below 135\u00b0F","Reheating the soup to 165\u00b0F for 15 seconds"],a:3,cat:"haccp"},
+{n:18,q:"Food contamination is most likely to happen when food handlers",o:["Chew tobacco","Conduct training","Talk to other food handlers","Listen to the radio"],a:0,cat:"safety"},
+{n:19,q:"During on-the-job training, a manager discovers that a food handler is handling raw and then cooked poultry without changing gloves. What should the manager do?",o:["Direct the food handler to put on a new pair of gloves and finish preparing the poultry","Discipline the food handler immediately and stop the service of poultry for the day","Stop the preparation of poultry until all the food prep surfaces can be cleaned","Throw out the cooked poultry and reinforce correct food handling"],a:3,cat:"safety"},
+{n:20,q:"Which food was correctly cooled?",o:["A large pot of soup divided into smaller pans and cooled at room temperature for 8 hours","Beans that did not cool to 70\u00b0F within 2 hours, but were reheated to 145\u00b0F for 15 seconds then cooled correctly","Cooked poultry that cooled from 135\u00b0F to 70\u00b0F within 2 hours and from 70\u00b0F to 41\u00b0F within an additional 4 hours","A roast that cooled from 135\u00b0F to 70\u00b0F within 4 hours and from 70\u00b0F to 41\u00b0F within an additional 6 hours"],a:2,cat:"temp"},
+{n:21,q:"Previously cooked food that was hot held for service must be reheated to which minimum internal temperature for at least 15 seconds?",o:["125\u00b0F","135\u00b0F","155\u00b0F","165\u00b0F"],a:3,cat:"temp"},
+{n:22,q:"Cooked vegetables should be",o:["Held at room temperature","Held at 135\u00b0F or higher","Cooked at 125\u00b0F or higher if they are to be held for later service","Blanched in boiling water before serving"],a:1,cat:"temp"},
+{n:23,q:"Food handlers were told about a special preparation requested by a customer with a food allergy. However, a small amount of the restricted food came in contact with the meal. Which action should be taken?",o:["Remove the portion that came in contact with the restricted food","Serve the meal because only a small amount of food was affected","Set the dish aside so that it will not be served and then inform management","Place the dish under a heat lamp before serving to kill the allergens"],a:2,cat:"allergen"},
+{n:24,q:"Which item is a food handler permitted to wear on hands and arms?",o:["Medical alert bracelet","Gold and diamond ring","Short, unpolished artificial fingernails","Plain metal band ring"],a:3,cat:"hygiene"},
+{n:25,q:"What is the minimum internal cooking temperature for raw eggs prepared for immediate service?",o:["135\u00b0F","145\u00b0F","155\u00b0F","165\u00b0F"],a:1,cat:"temp"},
+{n:26,q:"Fresh beef must be received at or below",o:["32\u00b0F","41\u00b0F","45\u00b0F","50\u00b0F"],a:1,cat:"temp"},
+{n:27,q:"An operation must obtain a variance from the regulatory authority before",o:["Packaging food for take-out customers","Shipping from between states","Smoking food for flavor enhancement","Curing food"],a:3,cat:"haccp"},
+{n:28,q:"The cook puts refrigerated lasagna into the steam table at 9:00am for service at noon. This practice is incorrect because the",o:["Steam table is to be used for holding correctly heated food","Food should be cooked to at least 120\u00b0F before being put into the steam table","Lasagna will burn if left for 3 hours in the steam table","Temperature of the food was not taken before being put into the steam table"],a:0,cat:"temp"},
+{n:29,q:"Food handlers should be excluded from the prep area when they are experiencing which symptom?",o:["Vertigo","Vomiting","Warts","Nausea"],a:1,cat:"hygiene"},
+{n:30,q:"The first step in a HACCP plan is to",o:["Develop monitoring procedures","Establish critical control points","Determine critical limits","Identify hazards"],a:3,cat:"haccp"},
+{n:31,q:"Shucked shellfish can be removed from their original container for display when the shell stock tag is retained for how many days?",o:["30","90","60","120"],a:1,cat:"haccp"},
+{n:32,q:"Which type of contaminant is a bone in a fish fillet?",o:["Chemical","Physical","Conventional","Biological"],a:1,cat:"safety"},
+{n:33,q:"Which item can be re-served to customers?",o:["Uncovered condiments","Unopened prepackaged food","Uneaten bread","Uneaten garnish"],a:1,cat:"safety"},
+{n:34,q:"The minimum water temperature when sanitizing utensils using hot water is",o:["171\u00b0F","110\u00b0F","165\u00b0F","150\u00b0F"],a:0,cat:"equipment"},
+{n:35,q:"When prepping food it is acceptable for food handlers to wear",o:["Bracelets","Open-toe shoes","Hats","Shorts"],a:2,cat:"hygiene"},
+{n:36,q:"The water temperature in the wash sink of a three-compartment sink must be at least",o:["110\u00b0F","125\u00b0F","150\u00b0F","165\u00b0F"],a:0,cat:"equipment"},
+{n:37,q:"The agency responsible for inspecting operations that ship food to other states is the",o:["FDA","NSF","CDC","EPA"],a:0,cat:"haccp"},
+{n:38,q:"When raw sewage backs up onto the floor of the kitchen, the operation must",o:["Section off the area where waste has spilled and continue service","Immediately close the operation, correct the problem, and thoroughly clean the facility","Notify the water department and close the restrooms until corrections are made","Correct the problem by the end of the shift and hire a professional to clean the waste"],a:1,cat:"equipment"},
+{n:39,q:"What should a cook do when prepping foods such as Caesar Salad dressing or mayonnaise for highly susceptible populations?",o:["Clean all equipment used to prepare eggs","Substitute pasteurized eggs for raw eggs","Thoroughly clean the egg shells","Leave food on the counter until it is ready to be mixed"],a:1,cat:"safety"},
+{n:40,q:"The ambient air thermometer in a walk-in cooler must be located",o:["In the coolest part of the unit","In the warmest part of the unit","Near the center of the unit","Near the compressor of the unit"],a:1,cat:"equipment"},
+{n:41,q:"Staff exposure to hepatitis A must be reported to regulatory authorities within how many days?",o:["30","60","90","120"],a:0,cat:"haccp"},
+{n:42,q:"Fruits and vegetables that are cooked for hot holding must be cooked to a minimum internal temperature of",o:["135\u00b0F","140\u00b0F","145\u00b0F","150\u00b0F"],a:0,cat:"temp"},
+{n:43,q:"When the water supply has been disrupted due to a natural disaster, an acceptable alternative is",o:["Buying commercially bottled drinking water","Sanitizing water with a 50-50 mixture of bleach","Securing water from a private well tested every 2 years","Using clean water from the air conditioning system"],a:0,cat:"equipment"},
+{n:44,q:"What food item can be re-served to customers?",o:["Oysters purchased from a local fishing dock","Crackers in an unopened original packaging","Ready-to-eat food in a swollen package","Previously served, unwrapped sandwiches"],a:1,cat:"safety"},
+{n:45,q:"The risk of foodborne illness caused by parasites can be reduced by",o:["Purchasing fish and produce from an approved supplier","Throwing out all dented cans or cans without labels","Adding acid to food to kill the parasites","Establishing an integrated pest management program"],a:0,cat:"safety"},
+{n:46,q:"An operation is serving oysters on the half shell. The operation must provide consumers with a",o:["Disclosure of raw ingredients","Caloric value of ingredients","Detailed description of ingredients","Sodium content of ingredients"],a:0,cat:"allergen"},
+{n:47,q:"Recommendations for foodservice regulations are issued at the federal level through the",o:["State health code","FDA Food Code","HACCP guidelines","OSHA standards"],a:0,cat:"haccp"},
+{n:48,q:"A food handler should be excluded from the operation if he or she is diagnosed with",o:["Diabetes mellitus","Hepatitis A","A sore throat","A high-risk pregnancy"],a:1,cat:"hygiene"},
+{n:49,q:"The manager must notify the regulatory authority if an employee comes to work with an illness caused by",o:["Influenza type A","Listeria monocytogenes","Shigella spp.","Staphylococcus aureus"],a:2,cat:"haccp"},
+{n:50,q:"A hand washing sink shall be equipped to provide hot water at a temperature of",o:["165\u00b0F","90\u00b0F","120\u00b0F","100\u00b0F"],a:3,cat:"equipment"},
+{n:51,q:"An operation that serves raw oysters on the half shell can best ensure safety by",o:["Purchasing oysters from the nearest dealer","Refrigerating the oysters after receiving them","Purchasing oysters from an approved supplier","Rinsing the oysters in warm water"],a:2,cat:"safety"},
+{n:52,q:"Which food item can be received at a temperature of 45\u00b0F or lower?",o:["Fresh fish","Fresh poultry","Shell eggs","Frozen cod fillets"],a:2,cat:"temp"},
+{n:53,q:"Equipment approved for use in the prep area should have a seal of approval from which of the following?",o:["FDA","USDA","NSF","HACCP"],a:2,cat:"equipment"},
+{n:54,q:"Floor-mounted equipment that is not easily moveable must be mounted at least how far off of the floor?",o:["2 in","4 in","6 in","8 in"],a:2,cat:"equipment"},
+{n:55,q:"When should food handlers use hand antiseptics?",o:["Instead of washing hands","Before washing hands","After washing hands","After putting on gloves"],a:2,cat:"hygiene"},
+{n:56,q:"Chemicals that can only be used by licensed pest control operators are considered",o:["Single-use liquids","Household-strength insecticides","Non-toxic insect sprays","Restricted-use pesticides"],a:3,cat:"equipment"},
+{n:57,q:"A TCS type of food that is cooked, cooled, and then reheated for hot holding must be reheated so that all parts of the food reach a temperature of 165\u00b0F for how many seconds?",o:["15","10","45","20"],a:0,cat:"temp"},
+{n:58,q:"When prepping food, a food handler should not wear which item?",o:["An apron","A hair restraint","A medical alert bracelet","Single-use gloves"],a:2,cat:"hygiene"},
+{n:59,q:"Single-service items must be received",o:["In undamaged original packaging","On separate delivery trucks from those carrying food","Separate from food items","If minor damage is apparent on the packaging"],a:0,cat:"safety"},
+{n:60,q:"A food handler would use an infrared thermometer to measure the temperature of which piece of equipment?",o:["Broiler","Deep fryer","Flat grill","Oven"],a:2,cat:"equipment"},
+{n:61,q:"After cooking TCS food in the microwave to a minimum internal temperature of 165\u00b0F for 15 seconds, which step should be taken next?",o:["Allow food to stand covered for 2 minutes after cooking to obtain an even temperature","Remove food from the microwave and allow it to stand uncovered for 3 minutes","Serve food immediately after removal from the microwave","Place food in a serving container immediately after removal"],a:0,cat:"temp"},
+{n:62,q:"Which would require single-use gloves?",o:["Bussing tables and buffet line","Handling ready-to-eat foods","Mixing sanitizer solution in sink","Washing whole fruits and vegetables"],a:1,cat:"hygiene"},
+{n:63,q:"A server uses a copper pitcher to serve margaritas, and several guests get sick. The most likely cause of the illness is that the",o:["Mixture of fruit and alcohol caused intoxication and severe headaches","Acidity of the beverage caused the copper to leach, resulting in chemical contamination","Server failed to provide food as an alternative to reduce the effects of the alcohol","Fruit and copper caused a biological reaction, resulting in pathogenic illness"],a:1,cat:"safety"}
+];
+</script>
+
+<script>
+// ==================== APP LOGIC ====================
+const CAT_META = {
+  safety:    {label:'Food Safety',     color:'#ef4444', bg:'rgba(239,68,68,.12)',  border:'rgba(239,68,68,.25)'},
+  temp:      {label:'Temperature',     color:'#f59e0b', bg:'rgba(245,158,11,.12)', border:'rgba(245,158,11,.25)'},
+  hygiene:   {label:'Hygiene',         color:'#22c55e', bg:'rgba(34,197,94,.12)',  border:'rgba(34,197,94,.25)'},
+  haccp:     {label:'HACCP & Regs',    color:'#a855f7', bg:'rgba(168,85,247,.12)', border:'rgba(168,85,247,.25)'},
+  equipment: {label:'Equipment',       color:'#14b8a6', bg:'rgba(20,184,166,.12)', border:'rgba(20,184,166,.25)'},
+  allergen:  {label:'Allergens',       color:'#ec4899', bg:'rgba(236,72,153,.12)', border:'rgba(236,72,153,.25)'}
+};
+const LETTERS = ['A','B','C','D'];
+let answered = {};
+let currentFilter = 'all';
+
+function renderQuestions() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '';
+  const qs = currentFilter === 'all' ? QUESTIONS : QUESTIONS.filter(q => q.cat === currentFilter);
+  qs.forEach(q => {
+    const m = CAT_META[q.cat];
+    const state = answered[q.n];
+    const isAnswered = state !== undefined;
+    let html = `<div class="q-card p-6 reveal" data-cat="${q.cat}" data-qn="${q.n}" style="opacity:1;transform:none;">
+      <div class="flex items-start justify-between mb-4">
+        <span class="text-slate-500 font-mono text-sm font-semibold">Q${q.n}</span>
+        <span class="cat-pill" style="background:${m.bg};color:${m.color};border:1px solid ${m.border}">${m.label}</span>
+      </div>
+      <p class="text-white font-medium mb-5 leading-relaxed">${q.q}</p>
+      <div class="space-y-2.5">`;
+    q.o.forEach((opt, i) => {
+      let cls = 'opt-btn';
+      if (isAnswered) {
+        if (i === q.a) cls += ' correct';
+        else if (state === i && i !== q.a) cls += ' wrong';
+      } else if (state === i) {
+        cls += ' selected';
+      }
+      const disabled = isAnswered ? 'pointer-events:none;' : '';
+      html += `<button class="${cls}" style="${disabled}" onclick="answer(${q.n},${i})">
+        <span class="opt-letter">${LETTERS[i]}</span>
+        <span class="text-sm text-slate-300">${opt}</span>
+      </button>`;
+    });
+    html += `</div>`;
+    if (isAnswered) {
+      const isCorrect = state === q.a;
+      html += `<div class="mt-4 px-4 py-3 rounded-lg text-sm ${isCorrect ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}">
+        ${isCorrect ? '&#10003; Correct!' : '&#10007; Incorrect. The correct answer is <strong>' + LETTERS[q.a] + '</strong>.'}
+      </div>`;
+    }
+    html += `</div>`;
+    container.insertAdjacentHTML('beforeend', html);
+  });
+  updateScore();
+}
+
+function answer(qn, idx) {
+  answered[qn] = idx;
+  renderQuestions();
+  updateCharts();
+  checkCompletion();
+}
+
+function updateScore() {
+  let correct = 0, wrong = 0;
+  Object.keys(answered).forEach(k => {
+    const q = QUESTIONS.find(x => x.n === +k);
+    if (q) { answered[k] === q.a ? correct++ : wrong++; }
+  });
+  const total = Object.keys(answered).length;
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('answeredCount').textContent = total;
+  document.getElementById('progressBar').style.width = (total / 63 * 100) + '%';
+}
+
+function filterQuestions(cat) {
+  currentFilter = cat;
+  document.querySelectorAll('#filterBar button').forEach(b => {
+    b.style.opacity = (b.dataset.cat === cat) ? '1' : '0.5';
+  });
+  renderQuestions();
+}
+
+function resetAll() {
+  answered = {};
+  renderQuestions();
+  updateCharts();
+}
+
+renderQuestions()
+</script>
+
+<script>
+// ==================== ECHARTS ====================
+const darkText = '#94a3b8';
+const chartBg = 'transparent';
+
+// Topic distribution bar chart
+const topicChart = echarts.init(document.getElementById('topicChart'), null, {renderer:'svg'});
+const catCounts = {};
+QUESTIONS.forEach(q => { catCounts[q.cat] = (catCounts[q.cat]||0) + 1; });
+const catKeys = Object.keys(CAT_META);
+topicChart.setOption({
+  backgroundColor: chartBg,
+  tooltip: { trigger:'axis', axisPointer:{type:'shadow'}, backgroundColor:'#1e293b', borderColor:'#334155', textStyle:{color:'#e2e8f0'} },
+  grid: { left:'3%', right:'4%', bottom:'3%', top:'8%', containLabel:true },
+  xAxis: { type:'category', data: catKeys.map(k=>CAT_META[k].label), axisLabel:{color:darkText,fontSize:11}, axisLine:{lineStyle:{color:'#334155'}} },
+  yAxis: { type:'value', axisLabel:{color:darkText}, splitLine:{lineStyle:{color:'rgba(148,163,184,.08)'}} },
+  series: [{
+    type:'bar', barWidth:'45%', itemStyle:{ borderRadius:[6,6,0,0] },
+    data: catKeys.map(k => ({value:catCounts[k]||0, itemStyle:{color:CAT_META[k].color}}))
+  }]
+});
+
+// Radar chart — score by category
+const radarChart = echarts.init(document.getElementById('radarChart'), null, {renderer:'svg'});
+function updateCharts() {
+  const catCorrect = {}, catTotal = {};
+  catKeys.forEach(k => { catCorrect[k]=0; catTotal[k]=0; });
+  QUESTIONS.forEach(q => {
+    catTotal[q.cat]++;
+    if (answered[q.n] !== undefined && answered[q.n] === q.a) catCorrect[q.cat]++;
+  });
+  radarChart.setOption({
+    backgroundColor: chartBg,
+    tooltip: { backgroundColor:'#1e293b', borderColor:'#334155', textStyle:{color:'#e2e8f0'} },
+    radar: {
+      indicator: catKeys.map(k => ({name:CAT_META[k].label, max:catTotal[k]||1})),
+      axisName: {color:darkText, fontSize:11},
+      splitArea: {areaStyle:{color:['rgba(59,130,246,.03)','rgba(59,130,246,.06)']}},
+      splitLine: {lineStyle:{color:'rgba(148,163,184,.1)'}},
+      axisLine: {lineStyle:{color:'rgba(148,163,184,.15)'}}
+    },
+    series: [{
+      type:'radar', symbol:'circle', symbolSize:6,
+      lineStyle:{width:2, color:'#3b82f6'},
+      areaStyle:{color:'rgba(59,130,246,.15)'},
+      itemStyle:{color:'#3b82f6'},
+      data:[{value:catKeys.map(k=>catCorrect[k]), name:'Your Score'}]
+    }]
+  });
+
+  // Pie chart — answered distribution
+  const totalAnswered = Object.keys(answered).length;
+  const totalCorrect = Object.values(answered).filter((v,i) => { const q = QUESTIONS.find(x=>x.n===+Object.keys(answered)[i]); return q && v===q.a; }).length;
+  let correctN=0, wrongN=0;
+  Object.keys(answered).forEach(k => { const q = QUESTIONS.find(x=>x.n===+k); if(q){answered[k]===q.a?correctN++:wrongN++;} });
+  const unanswered = 63 - totalAnswered;
+  pieChart.setOption({
+    backgroundColor: chartBg,
+    tooltip: { backgroundColor:'#1e293b', borderColor:'#334155', textStyle:{color:'#e2e8f0'} },
+    legend: { bottom:0, textStyle:{color:darkText}, itemWidth:12, itemHeight:12 },
+    series: [{
+      type:'pie', radius:['42%','70%'], center:['50%','45%'],
+      label:{show:false}, emphasis:{label:{show:true, color:'#fff', fontSize:14, fontWeight:'bold'}},
+      data:[
+        {value:correctN, name:'Correct', itemStyle:{color:'#22c55e'}},
+        {value:wrongN, name:'Wrong', itemStyle:{color:'#ef4444'}},
+        {value:unanswered, name:'Unanswered', itemStyle:{color:'#334155'}}
+      ]
+    }]
+  });
+}
+const pieChart = echarts.init(document.getElementById('pieChart'), null, {renderer:'svg'});
+updateCharts();
+
+// Temperature reference bar chart
+const tempChart = echarts.init(document.getElementById('tempChart'), null, {renderer:'svg'});
+const tempData = [
+  {name:'Receiving\n(Fresh Beef/Fish)', val:41, color:'#3b82f6'},
+  {name:'Cold Holding\n(TCS Foods)', val:41, color:'#3b82f6'},
+  {name:'Shell Eggs\nReceiving', val:45, color:'#60a5fa'},
+  {name:'Hand Wash\nWater', val:100, color:'#f59e0b'},
+  {name:'Wash Sink\n(3-Comp)', val:110, color:'#f97316'},
+  {name:'Cooked Vegs\nHot Holding', val:135, color:'#ef4444'},
+  {name:'Eggs\n(Immediate)', val:145, color:'#ef4444'},
+  {name:'Reheating\n(TCS)', val:165, color:'#dc2626'},
+  {name:'Microwave\nReheating', val:165, color:'#dc2626'},
+  {name:'Hot Water\nSanitizing', val:171, color:'#b91c1c'}
+];
+tempChart.setOption({
+  backgroundColor: chartBg,
+  tooltip: { trigger:'axis', axisPointer:{type:'shadow'}, backgroundColor:'#1e293b', borderColor:'#334155', textStyle:{color:'#e2e8f0'}, formatter:p=>p[0].name.replace(/\n/g,' ')+': <strong>'+p[0].value+'\u00b0F</strong>' },
+  grid: { left:'3%', right:'4%', bottom:'12%', top:'8%', containLabel:true },
+  xAxis: { type:'category', data:tempData.map(d=>d.name), axisLabel:{color:darkText,fontSize:10,interval:0,rotate:0}, axisLine:{lineStyle:{color:'#334155'}} },
+  yAxis: { type:'value', name:'\u00b0F', nameTextStyle:{color:darkText}, axisLabel:{color:darkText}, splitLine:{lineStyle:{color:'rgba(148,163,184,.08)'}},
+    markLine:{silent:true, data:[{yAxis:41,label:{formatter:'41\u00b0F Danger Zone',color:darkText,fontSize:10},lineStyle:{color:'rgba(59,130,246,.3)',type:'dashed'}},{yAxis:135,label:{formatter:'135\u00b0F Danger Zone',color:darkText,fontSize:10},lineStyle:{color:'rgba(239,68,68,.3)',type:'dashed'}}]}
+  },
+  series: [{
+    type:'bar', barWidth:'50%', itemStyle:{borderRadius:[4,4,0,0]},
+    data: tempData.map(d=>({value:d.val, itemStyle:{color:d.color}})),
+    markLine:{silent:true, symbol:'none', data:[
+      {yAxis:41, label:{formatter:'41\u00b0F',color:'#60a5fa',fontSize:10,position:'insideEndTop'}, lineStyle:{color:'rgba(59,130,246,.25)',type:'dashed',width:1}},
+      {yAxis:135, label:{formatter:'135\u00b0F',color:'#f87171',fontSize:10,position:'insideEndTop'}, lineStyle:{color:'rgba(239,68,68,.25)',type:'dashed',width:1}}
+    ]}
+  }]
+});
+
+// Resize
+window.addEventListener('resize', () => {
+  topicChart.resize(); radarChart.resize(); pieChart.resize(); tempChart.resize();
+});
+</script>
+
+<script>
+// ==================== GSAP ====================
+gsap.registerPlugin(ScrollTrigger);
+
+// Reveal animations
+document.querySelectorAll('.reveal').forEach(el => {
+  // Make visible by default for iframe/preview safety
+  el.style.opacity = '1';
+  el.style.transform = 'none';
+  gsap.from(el, {
+    opacity: 0, y: 30, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
+  });
+});
+
+// Hero parallax
+gsap.to('#hero', {
+  scrollTrigger: { trigger:'#hero', start:'top top', end:'bottom top', scrub:true },
+  opacity: 0.3, y: -80
+});
+
+// Floating nav show/hide
+ScrollTrigger.create({
+  trigger: '#overview',
+  start: 'top 80%',
+  onEnter: () => document.getElementById('floatNav').classList.replace('hidden','flex'),
+  onLeaveBack: () => document.getElementById('floatNav').classList.replace('flex','hidden')
+});
+
+// Stat number count-up
+document.querySelectorAll('.stat-glow').forEach(el => {
+  const numEl = el.querySelector('.text-4xl');
+  if (!numEl) return;
+  const raw = numEl.textContent;
+  const num = parseInt(raw);
+  if (isNaN(num)) return;
+  const suffix = raw.replace(/[0-9]/g, '');
+  gsap.from({v:0}, {
+    v: num, duration: 1.5, ease: 'power2.out',
+    scrollTrigger: { trigger: el, start: 'top 85%' },
+    onUpdate: function() { numEl.textContent = Math.round(this.targets()[0].v) + suffix; }
+  });
+});
+</script>
+
+<script>
+// ==================== BADGE SYSTEM ====================
+const SECRET_KEY = 'servsafe2026_bridging_culinary';
+const TIER_META = {
+  gold:   { label: 'Gold',   color: '#f59e0b', gradient: ['#f59e0b','#d97706'], icon: '\u2605', min: 95 },
+  silver: { label: 'Silver', color: '#94a3b8', gradient: ['#94a3b8','#64748b'], icon: '\u2605', min: 85 },
+  bronze: { label: 'Bronze', color: '#d97706', gradient: ['#cd7f32','#a0522d'], icon: '\u2605', min: 75 }
+};
+let badgeShownForSession = false;
+
+function getScoreInfo() {
+  let correct = 0;
+  Object.keys(answered).forEach(k => {
+    const q = QUESTIONS.find(x => x.n === +k);
+    if (q && answered[k] === q.a) correct++;
+  });
+  const total = Object.keys(answered).length;
+  const pct = total > 0 ? Math.round((correct / 63) * 100) : 0;
+  return { correct, total, pct };
+}
+
+function getTier(pct) {
+  if (pct >= 95) return 'gold';
+  if (pct >= 85) return 'silver';
+  if (pct >= 75) return 'bronze';
+  return null;
+}
+
+function checkCompletion() {
+  const { total, pct } = getScoreInfo();
+  if (total < 63 || badgeShownForSession) return;
+  badgeShownForSession = true;
+  // Save progress to localStorage immediately
+  localStorage.setItem('servsafe_answers', JSON.stringify(answered));
+  setTimeout(() => showBadgeModal(pct), 600);
+}
+
+function showBadgeModal(pct) {
+  const tier = getTier(pct);
+  const overlay = document.getElementById('badgeOverlay');
+  const step1 = document.getElementById('badgeStep1');
+  const step2 = document.getElementById('badgeStep2');
+  step1.classList.remove('hidden');
+  step2.classList.add('hidden');
+
+  if (tier) {
+    const t = TIER_META[tier];
+    document.getElementById('badgeEmoji').textContent = '\uD83C\uDF89';
+    document.getElementById('badgeTitle').textContent = 'Congratulations! You Passed!';
+    document.getElementById('badgeSubtitle').textContent = 'You scored ' + pct + '% and earned a practice badge.';
+    document.getElementById('badgeTierDisplay').innerHTML =
+      '<div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full" style="background:' + t.gradient[0] + '20;border:1px solid ' + t.gradient[0] + '40">' +
+      '<span style="color:' + t.color + ';font-size:1.25rem;">' + t.icon + '</span>' +
+      '<span style="color:' + t.color + '" class="font-bold text-lg">' + t.label + ' Badge</span>' +
+      '<span class="text-slate-300 text-sm ml-1">(' + pct + '%)</span></div>';
+    document.getElementById('badgeNameSection').classList.remove('hidden');
+    document.getElementById('badgeGenerateBtn').classList.remove('hidden');
+    document.getElementById('badgeRetryBtn').classList.add('hidden');
+    // Fire confetti
+    fireConfetti();
+  } else {
+    document.getElementById('badgeEmoji').textContent = '\uD83D\uDCDA';
+    document.getElementById('badgeTitle').textContent = 'Keep Practicing!';
+    document.getElementById('badgeSubtitle').textContent = 'You scored ' + pct + '%. You need 75% or higher to earn a badge.';
+    document.getElementById('badgeTierDisplay').innerHTML =
+      '<div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-700/50 border border-slate-600/30">' +
+      '<span class="text-slate-400 font-semibold">' + pct + '%</span>' +
+      '<span class="text-slate-500 text-sm">/ 75% needed</span></div>';
+    document.getElementById('badgeNameSection').classList.add('hidden');
+    document.getElementById('badgeGenerateBtn').classList.add('hidden');
+    document.getElementById('badgeRetryBtn').classList.remove('hidden');
+  }
+  overlay.classList.add('active');
+}
+
+function closeBadgeModal() {
+  document.getElementById('badgeOverlay').classList.remove('active');
+}
+
+// ==================== BADGE CANVAS DRAWING ====================
+function generateBadge() {
+  const nameInput = document.getElementById('badgeNameInput').value.trim();
+  if (!nameInput) {
+    document.getElementById('badgeNameInput').style.borderColor = '#ef4444';
+    document.getElementById('badgeNameInput').placeholder = 'Please enter your name';
+    return;
+  }
+  const { correct, pct } = getScoreInfo();
+  const tier = getTier(pct);
+  if (!tier) return;
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const isoDate = now.toISOString().slice(0, 10);
+
+  // Generate verification hash
+  const hashInput = nameInput + '|' + pct + '|' + isoDate + '|' + SECRET_KEY;
+  const hash = btoa(hashInput);
+  const verifyData = JSON.stringify({ name: nameInput, score: pct, date: isoDate, tier: tier, hash: hash });
+  const verifyB64 = btoa(verifyData);
+  const verifyURL = 'verify.html?v=' + encodeURIComponent(verifyB64);
+
+  // Save badge data to localStorage
+  const badgeData = { name: nameInput, score: pct, date: isoDate, dateFormatted: dateStr, tier: tier, hash: hash, correct: correct };
+  const history = JSON.parse(localStorage.getItem('servsafe_badge_history') || '[]');
+  history.push(badgeData);
+  localStorage.setItem('servsafe_badge_history', JSON.stringify(history));
+  localStorage.setItem('servsafe_badge_latest', JSON.stringify(badgeData));
+
+  // Generate QR code first, then draw badge
+  const qrHolder = document.getElementById('qrHolder');
+  qrHolder.innerHTML = '';
+  const qr = new QRCode(qrHolder, {
+    text: verifyURL,
+    width: 120,
+    height: 120,
+    colorDark: '#1e293b',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+  // Wait for QR image to render
+  setTimeout(() => {
+    const qrImg = qrHolder.querySelector('img') || qrHolder.querySelector('canvas');
+    drawBadgeCanvas(nameInput, pct, dateStr, tier, qrImg);
+    // Show step 2
+    document.getElementById('badgeStep1').classList.add('hidden');
+    document.getElementById('badgeStep2').classList.remove('hidden');
+    // Update previous badge banner
+    showPrevBadgeBanner();
+  }, 500);
+}
+
+function drawBadgeCanvas(name, score, dateStr, tier, qrEl) {
+  const canvas = document.getElementById('badgeCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = 800, H = 600;
+  const t = TIER_META[tier];
+
+  // White background for printability
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // Decorative border
+  const borderW = 6;
+  ctx.strokeStyle = t.gradient[0];
+  ctx.lineWidth = borderW;
+  ctx.strokeRect(borderW/2, borderW/2, W - borderW, H - borderW);
+  // Inner border
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(16, 16, W - 32, H - 32);
+
+  // Corner accents
+  drawCornerAccent(ctx, 20, 20, 40, t.gradient[0]);
+  drawCornerAccent(ctx, W - 20, 20, 40, t.gradient[0], true, false);
+  drawCornerAccent(ctx, 20, H - 20, 40, t.gradient[0], false, true);
+  drawCornerAccent(ctx, W - 20, H - 20, 40, t.gradient[0], true, true);
+
+  // Top center seal/icon
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(W/2, 80, 32, 0, Math.PI*2);
+  const sealGrad = ctx.createRadialGradient(W/2, 80, 5, W/2, 80, 32);
+  sealGrad.addColorStop(0, t.gradient[0]);
+  sealGrad.addColorStop(1, t.gradient[1]);
+  ctx.fillStyle = sealGrad;
+  ctx.fill();
+  // Checkmark in seal
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(W/2 - 12, 80);
+  ctx.lineTo(W/2 - 3, 91);
+  ctx.lineTo(W/2 + 14, 70);
+  ctx.stroke();
+  ctx.restore();
+
+  // Title text
+  ctx.fillStyle = '#1e293b';
+  ctx.font = '600 14px Inter, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('CERTIFICATE OF ACHIEVEMENT', W/2, 136);
+
+  // Horizontal rule
+  ctx.beginPath();
+  ctx.moveTo(200, 152);
+  ctx.lineTo(600, 152);
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // "ServSafe Practice Exam"
+  ctx.fillStyle = '#0f172a';
+  ctx.font = '800 28px Inter, system-ui, sans-serif';
+  ctx.fillText('ServSafe Food Manager', W/2, 190);
+  ctx.font = '600 20px Inter, system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText('Practice Exam', W/2, 218);
+
+  // "This certifies that"
+  ctx.fillStyle = '#64748b';
+  ctx.font = '400 13px Inter, system-ui, sans-serif';
+  ctx.fillText('This certifies that', W/2, 258);
+
+  // Student name
+  ctx.fillStyle = '#0f172a';
+  ctx.font = '700 32px Inter, system-ui, sans-serif';
+  // Truncate if too long
+  let displayName = name;
+  while (ctx.measureText(displayName).width > 500 && displayName.length > 0) {
+    displayName = displayName.slice(0, -1);
+  }
+  ctx.fillText(displayName, W/2, 296);
+
+  // Underline under name
+  const nameWidth = Math.min(ctx.measureText(displayName).width + 40, 520);
+  ctx.beginPath();
+  ctx.moveTo((W - nameWidth)/2, 308);
+  ctx.lineTo((W + nameWidth)/2, 308);
+  ctx.strokeStyle = t.gradient[0] + '60';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // "has successfully completed..."
+  ctx.fillStyle = '#64748b';
+  ctx.font = '400 13px Inter, system-ui, sans-serif';
+  ctx.fillText('has successfully completed the practice examination with a score of', W/2, 340);
+
+  // Score display
+  ctx.fillStyle = t.gradient[0];
+  ctx.font = '800 48px Inter, system-ui, sans-serif';
+  ctx.fillText(score + '%', W/2, 396);
+
+  // Tier badge
+  ctx.font = '700 15px Inter, system-ui, sans-serif';
+  const tierText = t.label.toUpperCase() + ' ACHIEVEMENT';
+  const tierW = ctx.measureText(tierText).width + 32;
+  const tierX = (W - tierW)/2;
+  // Rounded pill
+  ctx.beginPath();
+  roundRect(ctx, tierX, 410, tierW, 30, 15);
+  ctx.fillStyle = t.gradient[0] + '18';
+  ctx.fill();
+  ctx.strokeStyle = t.gradient[0] + '40';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.fillStyle = t.gradient[0];
+  ctx.font = '700 12px Inter, system-ui, sans-serif';
+  ctx.fillText(tierText, W/2, 430);
+
+  // Date
+  ctx.fillStyle = '#64748b';
+  ctx.font = '400 12px Inter, system-ui, sans-serif';
+  ctx.fillText('Awarded on ' + dateStr, W/2, 472);
+
+  // Bottom divider
+  ctx.beginPath();
+  ctx.moveTo(100, 500);
+  ctx.lineTo(700, 500);
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Footer left — disclaimer
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '400 9px Inter, system-ui, sans-serif';
+  ctx.fillText('Practice exam for educational purposes.', 40, 530);
+  ctx.fillText('ServSafe\u00AE is a registered trademark of the', 40, 544);
+  ctx.fillText('National Restaurant Association.', 40, 558);
+
+  // Footer center — "Scan to verify"
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '400 9px Inter, system-ui, sans-serif';
+  ctx.fillText('Scan QR code to verify', W/2, 575);
+
+  // QR code — bottom right
+  if (qrEl) {
+    try {
+      ctx.drawImage(qrEl, W - 160, 505, 100, 100);
+      // QR border
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(W - 162, 503, 104, 104);
+    } catch(e) {
+      // QR failed to draw, skip silently
+    }
+  }
+}
+
+function drawCornerAccent(ctx, x, y, size, color, flipX, flipY) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  const dx = flipX ? -1 : 1;
+  const dy = flipY ? -1 : 1;
+  ctx.beginPath();
+  ctx.moveTo(x, y + dy * size);
+  ctx.lineTo(x, y);
+  ctx.lineTo(x + dx * size, y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function downloadBadge() {
+  const canvas = document.getElementById('badgeCanvas');
+  const saved = JSON.parse(localStorage.getItem('servsafe_badge_latest') || '{}');
+  const safeName = (saved.name || 'Student').replace(/[^a-zA-Z0-9]/g, '_');
+  const link = document.createElement('a');
+  link.download = 'ServSafe_Badge_' + safeName + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ==================== CONFETTI ====================
+function fireConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const particles = [];
+  const colors = ['#f59e0b','#3b82f6','#22c55e','#a855f7','#ef4444','#ec4899','#14b8a6'];
+
+  for (let i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height * -1 - 20,
+      w: Math.random() * 8 + 4,
+      h: Math.random() * 4 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 3,
+      vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360,
+      rotV: (Math.random() - 0.5) * 10,
+      opacity: 1
+    });
+  }
+
+  let frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      if (p.opacity <= 0) return;
+      alive = true;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.05;
+      p.rot += p.rotV;
+      if (frame > 80) p.opacity -= 0.015;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.opacity);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive && frame < 200) {
+      requestAnimationFrame(animate);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+// ==================== PREVIOUS BADGE BANNER ====================
+function showPrevBadgeBanner() {
+  const saved = JSON.parse(localStorage.getItem('servsafe_badge_latest') || 'null');
+  if (!saved) return;
+  const t = TIER_META[saved.tier];
+  if (!t) return;
+  const banner = document.getElementById('prevBadgeBanner');
+  document.getElementById('prevBadgeIcon').textContent = t.icon;
+  document.getElementById('prevBadgeText').textContent = saved.name + ' \u2014 ' + t.label + ' Badge (' + saved.score + '%)';
+  document.getElementById('prevBadgeDate').textContent = 'Earned ' + saved.dateFormatted;
+  banner.classList.remove('hidden');
+}
+
+function hidePrevBanner() {
+  document.getElementById('prevBadgeBanner').classList.add('hidden');
+}
+
+function viewSavedBadge() {
+  const saved = JSON.parse(localStorage.getItem('servsafe_badge_latest') || 'null');
+  if (!saved) return;
+  const overlay = document.getElementById('badgeOverlay');
+  document.getElementById('badgeStep1').classList.add('hidden');
+  document.getElementById('badgeStep2').classList.remove('hidden');
+
+  // Regenerate the badge canvas
+  const verifyData = JSON.stringify({ name: saved.name, score: saved.score, date: saved.date, tier: saved.tier, hash: saved.hash });
+  const verifyB64 = btoa(verifyData);
+  const verifyURL = 'verify.html?v=' + encodeURIComponent(verifyB64);
+
+  const qrHolder = document.getElementById('qrHolder');
+  qrHolder.innerHTML = '';
+  new QRCode(qrHolder, { text: verifyURL, width: 120, height: 120, colorDark: '#1e293b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+
+  setTimeout(() => {
+    const qrImg = qrHolder.querySelector('img') || qrHolder.querySelector('canvas');
+    drawBadgeCanvas(saved.name, saved.score, saved.dateFormatted, saved.tier, qrImg);
+    overlay.classList.add('active');
+  }, 500);
+}
+
+// On page load, check for saved badge
+showPrevBadgeBanner();
+
+// Close modal on overlay click (not modal content)
+document.getElementById('badgeOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeBadgeModal();
+});
+</script>
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
